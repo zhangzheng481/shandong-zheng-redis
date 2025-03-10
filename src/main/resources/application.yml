@@ -1,0 +1,10 @@
+spring:
+  redis:
+    host: 182.160.1.15
+    port: 26379
+    password:
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
