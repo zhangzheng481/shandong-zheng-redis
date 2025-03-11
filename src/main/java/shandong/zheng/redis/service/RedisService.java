@@ -1,7 +1,7 @@
 package shandong.zheng.redis.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import shandong.zheng.redis.entity.User;
@@ -18,36 +18,38 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class RedisService {
+
     @Resource
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     // 字符串操作
     public void setString(String key, String value) {
-        redisTemplate.opsForValue().set(key, value);
+        log.info("set string key: {}, value: {}", key, value);
+        stringRedisTemplate.opsForValue().set(key, value);
     }
 
     public String getString(String key) {
-        return (String) redisTemplate.opsForValue().get(key);
+        return stringRedisTemplate.opsForValue().get(key);
     }
 
     // Hash操作（用户存储）
     public void saveUser(User user) {
-        redisTemplate.opsForHash().put("users", user.getId().toString(), user);
+        stringRedisTemplate.opsForHash().put("users", user.getId().toString(), user);
     }
 
     public User getUser(Long id) {
-        return (User) redisTemplate.opsForHash().get("users", id.toString());
+        return (User) stringRedisTemplate.opsForHash().get("users", id.toString());
     }
 
     // 自增ID生成
     public Long generateId(String key) {
-        return redisTemplate.opsForValue().increment(key, 1);
+        return stringRedisTemplate.opsForValue().increment(key, 1);
     }
 
     // 分布式锁
     public boolean tryLock(String lockKey, String requestId, long expireSeconds) {
         return Boolean.TRUE.equals(
-                redisTemplate.opsForValue().setIfAbsent(
+                stringRedisTemplate.opsForValue().setIfAbsent(
                         lockKey,
                         requestId,
                         expireSeconds,
@@ -77,7 +79,7 @@ public class RedisService {
             redisScript.setResultType(Long.class);
 
             // 执行脚本
-            Object result = (Long) redisTemplate.execute(
+            Object result = (Long) stringRedisTemplate.execute(
                     redisScript,
                     Collections.singletonList(lockKey), // KEYS[1]
                     requestId                           // ARGV[1]
@@ -92,11 +94,11 @@ public class RedisService {
     }
 
     // List操作
-    public void addToList(String key, Object value) {
-        redisTemplate.opsForList().rightPush(key, value);
+    public void addToList(String key, String value) {
+        stringRedisTemplate.opsForList().rightPush(key, value);
     }
 
-    public List<Object> getList(String key) {
-        return redisTemplate.opsForList().range(key, 0, -1);
+    public List<String> getList(String key) {
+        return stringRedisTemplate.opsForList().range(key, 0, -1);
     }
 }

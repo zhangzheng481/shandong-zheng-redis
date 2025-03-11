@@ -18,6 +18,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/redis")
 public class RedisController {
+    private static Integer index = 0;
     @Resource
     private RedisService redisService;
 
@@ -25,7 +26,7 @@ public class RedisController {
     @PostMapping("/set/string")
     public ServiceResponse<String> setString(@RequestBody Map<String, String> data) {
         ServiceResponse<String> response=new ServiceResponse<>(ResponseEnum.SUCCESS);
-        redisService.setString(data.get("key"), data.get("value"));
+        redisService.setString(data.get("key")+index++, data.get("value"));
         response.setResult("String stored successfully");
         return response;
     }
@@ -62,7 +63,7 @@ public class RedisController {
     @PostMapping("/list")
     public ServiceResponse<String> addToList(@RequestBody Map<String, Object> data) {
         ServiceResponse<String> response=new ServiceResponse<>(ResponseEnum.SUCCESS);
-        redisService.addToList((String) data.get("key"), data.get("value"));
+        redisService.addToList((String) data.get("key"), String.valueOf(data.get("value")));
         response.setResult("List added successfully");
         return response;
     }
